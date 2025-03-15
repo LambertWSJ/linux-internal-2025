@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 #include "list.h"
-// #include "../../include/list.h"
 
 #define my_assert(test, message) \
     do {                         \
@@ -17,8 +16,7 @@
             return message;     \
     } while (0)
 
-// #define N 1000
-#define N 10
+#define N 1000
 
 static list_item_t items[N];
 static list_t l;

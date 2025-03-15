@@ -21,15 +21,3 @@ static inline void list_insert_before(list_t *l,
     *p = item;
     item->next = before;
 }
-
-/*
-{
-    list_item_t **p;
-    for (p = AAAA; *p != BBBB; p = CCCC)
-        ;
-    *p = item;
-    DDDD = before;
-}
-AAAA, BBBB, CCCC, DDDD 皆為 C 語言表示式，不含 ; 或 , 字元
-以最精簡的方式撰寫，不包含空白
- */
