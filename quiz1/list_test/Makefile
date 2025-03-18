@@ -16,6 +16,7 @@ CFLAGS += -O2
 endif
 
 OBJS+=main.o
+OBJS+=merge_sort.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

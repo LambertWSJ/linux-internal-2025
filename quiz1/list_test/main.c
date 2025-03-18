@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "list.h"
 
@@ -17,22 +18,26 @@
     } while (0)
 
 #define N 1000
+#define TEST_INSERT 1
+#define TEST_SORT 2
 
 static list_item_t items[N];
 static list_t l;
 
-static list_t *list_reset(void)
+static list_t *list_reset(int test)
 {
     for (size_t i = 0; i < N; i++) {
-        items[i].value = i;
+        items[i].value = test == TEST_INSERT ? i : rand();
         items[i].next = NULL;
     }
     l.head = NULL;
     return &l;
 }
 
-static size_t list_size(list_t *l) {
-    if(!l) return 0;
+static size_t list_size(list_t *l)
+{
+    if (!l)
+        return 0;
     size_t len = 0;
     struct list_item *node;
     for (node = l->head; node; node = node->next)
@@ -43,7 +48,7 @@ static size_t list_size(list_t *l) {
 static char *test_list(void)
 {
     /* Test inserting at the beginning */
-    list_reset();
+    list_reset(TEST_INSERT);
     my_assert(list_size(&l) == 0, "Initial list size is expected to be zero.");
     for (size_t i = 0; i < N; i++)
         list_insert_before(&l, l.head, &items[i]);
@@ -57,7 +62,7 @@ static char *test_list(void)
     }
 
     /* Test inserting at the end */
-    list_reset();
+    list_reset(TEST_INSERT);
     my_assert(list_size(&l) == 0, "Initial list size is expected to be zero.");
     for (size_t i = 0; i < N; i++)
         list_insert_before(&l, NULL, &items[i]);
@@ -71,11 +76,26 @@ static char *test_list(void)
     }
 
     /* Reset the list and insert elements in order (i.e. at the end) */
-    list_reset();
+    list_reset(TEST_INSERT);
     my_assert(list_size(&l) == 0, "Initial list size is expected to be zero.");
     for (size_t i = 0; i < N; i++)
         list_insert_before(&l, NULL, &items[i]);
     my_assert(list_size(&l) == N, "list size should be N");
+
+    list_reset(TEST_SORT);
+    my_assert(list_size(&l) == 0, "Initial list size is expected to be zero.");
+    for (size_t i = 0; i < N; i++)
+        list_insert_before(&l, l.head, &items[i]);
+    my_assert(list_size(&l) == N, "Final list size should be N");
+    l.head = list_merge_sort(l.head);
+    my_assert(list_size(&l) == N, "Sorted list size should be N");
+
+    list_item_t *prev = NULL;
+    for (cur = l.head; cur; cur = cur->next) {
+        if (!prev)
+            continue;
+        my_assert(cur->value > prev->value, "sort error");
+    }
 
     return NULL;
 }
@@ -84,6 +104,7 @@ int tests_run = 0;
 
 static char *test_suite(void)
 {
+    srand(time(NULL));
     my_run_test(test_list);
     return NULL;
 }
