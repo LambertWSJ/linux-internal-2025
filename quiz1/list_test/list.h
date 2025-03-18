@@ -1,6 +1,4 @@
 #pragma once
-#include <stddef.h>
-
 
 typedef struct list_item {
     int value;
@@ -12,8 +10,8 @@ typedef struct {
 } list_t;
 
 static inline void list_insert_before(list_t *l,
-                        struct list_item *before,
-                        struct list_item *item)
+                                      struct list_item *before,
+                                      struct list_item *item)
 {
     list_item_t **p;
     for (p = &l->head; *p != before; p = &(*p)->next)
@@ -21,3 +19,5 @@ static inline void list_insert_before(list_t *l,
     *p = item;
     item->next = before;
 }
+
+list_item_t *list_merge_sort(list_item_t *head);
