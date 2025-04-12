@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+#define UNUSED __attribute__((unused))
 
 typedef uint8_t u8;
 typedef uint16_t u16;
