@@ -1,6 +1,9 @@
-#include "list_util.h"
 #include <stdbool.h>
 #include <assert.h>
+#include <time.h>
+#include <stdio.h>
+#include "list_util.h"
+#include "common.h"
 
 /* Verify if list is order */
 static bool list_is_ordered(const struct list_head *head)
@@ -78,7 +81,40 @@ void quick_sort(struct list_head *list)
     rebuild_list_link(list);
 }
 
-int main(int argc, char **argv)
+void list_quicksort(struct list_head *head)
+{
+    /* check empty */
+    if (list_empty(head) || list_is_singular(head))
+        return;
+
+    LIST_HEAD(left);
+    LIST_HEAD(right);
+    /* find piviot */
+    node_t *pivot = list_first_entry(head, node_t, list);
+    list_del(&pivot->list);
+
+    /* compare with pivot and split into left and right */
+    node_t *itr, *safe;
+    list_for_each_entry_safe(itr, safe, head, list) {
+        if (itr->value < pivot->value)
+            list_move(&itr->list, &left);
+        else
+            list_move_tail(&itr->list, &right);
+    }
+
+    /* sort left and right */
+    list_quicksort(&left);
+    list_quicksort(&right);
+
+    /* head->pivot */
+    list_add(&pivot->list, head);
+    /* head->left->pivot */
+    list_splice(&left, head);
+    /* head->left->pivot->right */
+    list_splice_tail(&right, head);
+}
+
+void run_quiz()
 {
     struct list_head *list = malloc(sizeof(struct list_head));
     INIT_LIST_HEAD(list);
@@ -95,5 +131,24 @@ int main(int argc, char **argv)
     assert(list_is_ordered(list));
     list_free(list);
     free(test_arr);
+}
+
+int main(UNUSED int argc, UNUSED char **argv)
+{
+    LIST_HEAD(list);
+    srand(time(NULL));
+    size_t count = 100;
+    int *test_arr = malloc(sizeof(int) * count);
+    for (int i = 0; i < count; ++i)
+        test_arr[i] = i;
+    shuffle(test_arr, count);
+
+    while (count--)
+        list_construct(&list, test_arr[count]);
+    free(test_arr);
+
+    list_quicksort(&list);
+
+    assert(list_is_ordered(&list));
     return 0;
 }
