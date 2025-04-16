@@ -8,6 +8,7 @@ OBJS:=
 
 CFLAGS += -std=gnu99
 CFLAGS += -Wall -Wextra
+CFLAGS += -I../../include
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g
