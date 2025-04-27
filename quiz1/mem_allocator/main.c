@@ -1,8 +1,8 @@
 #include <assert.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
 #include "common.h"
 
 typedef struct block {
@@ -12,12 +12,11 @@ typedef struct block {
 
 block_t **find_free_tree(block_t **root, block_t *target)
 {
-    for(block_t **indir = root, *itr; *indir; ) {
+    for (block_t **indir = root, *itr; *indir;) {
         itr = *indir;
-        if (itr->size == target->size) {
+        if (itr->size == target->size)
             return indir;
-        }
-        indir = itr->size > target->size? &itr->l: &itr->r;
+        indir = itr->size > target->size ? &itr->l : &itr->r;
     }
     return NULL;
 }
@@ -25,16 +24,14 @@ block_t **find_free_tree(block_t **root, block_t *target)
 block_t **find_free_tree_recur(block_t **root, block_t *target)
 {
     block_t *node = *root;
-    if(!node)
+    if (!node)
         return root;
-
     if (node == target)
         return root;
-    else if (node->size < target->size)
-        return find_free_tree_recur(&node->r, target);
     else
-        return find_free_tree_recur(&node->l, target);
-
+        return node->size < target->size
+                   ? find_free_tree_recur(&node->r, target)
+                   : find_free_tree_recur(&node->l, target);
     return NULL;
 }
 
@@ -42,45 +39,32 @@ block_t **find_free_tree_recur(block_t **root, block_t *target)
 block_t *find_predecessor_free_tree(block_t **root, block_t *node)
 {
     block_t *pred = NULL;
-    for(block_t **indir = root, *itr; *root;) {
+    for (block_t *itr = *root, **indir = &itr; *indir;) {
         itr = *indir;
-        if(itr->size < node->size) {
+        indir = itr->size < node->size?(pred = itr, &itr->r): &itr->l;
+    }
+    return pred;
+}
+
+block_t *find_predecessor_free_tree_ori(block_t **root, block_t *node)
+{
+    block_t *pred;
+    for (block_t *itr = *root; itr;) {
+        if (itr->size < node->size) {
             pred = itr;
-            *indir = itr->r;
+            itr = itr->r;
         } else
-            *indir = itr->l;
+            itr = itr->l;
     }
-    return pred;
-}
-
-block_t *find_predecessor_free_tree_v1(block_t **root, block_t *node)
-{
-    block_t *pred = NULL;
-
-    for (block_t **indir = root, *itr; *indir;) {
-        itr = *indir;
-        indir = itr->size < node->size? (pred = itr, &itr->r): &itr->l;
-    }
-    return pred;
-}
-
-block_t *find_predecessor_free_tree_v2(block_t **root, block_t *node)
-{
-    if(!node || !node->l) return node;
-
-    block_t *pred = node->l? node->l: node;
-    while (pred->r)
-        pred = pred->r;
-
     return pred;
 }
 
 void block_insert_free_tree(block_t **root, block_t *node)
 {
     block_t **indir = root;
-    for(block_t *itr; *indir;) {
+    for (block_t *itr; *indir;) {
         itr = *indir;
-        indir = itr->size > node->size? &itr->l: &itr->r;
+        indir = itr->size > node->size ? &itr->l : &itr->r;
     }
 
     *indir = node;
@@ -89,31 +73,32 @@ void block_insert_free_tree(block_t **root, block_t *node)
 void block_insert_free_tree_recur(block_t **root, block_t *node)
 {
     block_t *itr = *root;
-    if(!itr) {
+    if (!itr) {
         *root = node;
         return;
     }
-    block_t **next = itr->size > node->size? &itr->l: &itr->r;
+    block_t **next = itr->size > node->size ? &itr->l : &itr->r;
     block_insert_free_tree_recur(next, node);
 }
 
 void block_insert_free_tree_itr(block_t **root, block_t *node)
 {
-    if(!node) return;
-    if(!*root && node) {
+    if (!node)
+        return;
+    if (!*root && node) {
         *root = node;
         return;
     }
     block_t *proot = *root;
     while (proot) {
         if (proot->size < node->size) {
-            if(!proot->r) {
+            if (!proot->r) {
                 proot->r = node;
                 break;
             }
             proot = proot->r;
         } else {
-            if(!proot->l) {
+            if (!proot->l) {
                 proot->l = node;
                 break;
             }
@@ -182,28 +167,31 @@ void remove_free_tree(block_t **root, block_t *target)
     target->r = NULL;
 }
 
-block_t *init_free_tree(size_t size) {
+block_t *init_free_tree(size_t size)
+{
     block_t *root = malloc(sizeof(block_t));
     root->size = size;
     root->l = root->r = NULL;
     return root;
 }
 
-static void inorder_traversal(block_t *root) {
-    if (!root) {
+static void inorder_traversal(block_t *root)
+{
+    if (!root)
         return;
-    }
+
     inorder_traversal(root->l);
     printf("%ld ", root->size);
     inorder_traversal(root->r);
 }
 
-void dump_free_tree(block_t *root) {
+void dump_free_tree(block_t *root)
+{
     inorder_traversal(root);
     puts("");
 }
 
-int main(int argc, char **argv)
+int main()
 {
     size_t sizes[] = {50, 30, 70, 20, 40, 60, 80};
     block_t *root = NULL;
@@ -212,7 +200,6 @@ int main(int argc, char **argv)
         block_insert_free_tree(&root, block);
     }
     dump_free_tree(root);
-
     remove_free_tree(&root, root->l);
     dump_free_tree(root);
 
