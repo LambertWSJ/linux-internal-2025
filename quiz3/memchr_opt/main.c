@@ -27,7 +27,7 @@
 #endif
 
 /* @return nonzero if (long)X contains the byte used to fill MASK. */
-#define DETECT_CHAR(X, mask) DETECT_NULL((X) ^ (~0UL / 0xFF * (unsigned char)(mask)))
+#define DETECT_CHAR(X, mask) DETECT_NULL((X) ^ (mask))
 
 void *memchr_opt(const void *str, int c, size_t len)
 {
@@ -86,6 +86,5 @@ int main()
 
     char *ret = memchr_opt(str, ch, strlen(str));
     printf("String after |%c| is - |%s|\n", ch, ret);
-    /* String after |.| is - |.csie.ncku.edu.tw| */
     return 0;
 }
